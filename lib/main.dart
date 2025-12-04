@@ -82,7 +82,7 @@ class ExerciseHomePage extends StatelessWidget {
                 },
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
             Text('Solo voti sufficienti:', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             ...passed.map((e) => Text('✓ ${e.name}: ${e.score}')),
