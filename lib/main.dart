@@ -1,3 +1,4 @@
+import "package:flutter/material.dart";
 import 'dart.dart';
 
 void main() {
@@ -36,7 +37,7 @@ class ExerciseHomePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Esercizi Studenti'),
-        backgroundColor: Colors.blue,
+        backgroundColor: const Color.fromARGB(255, 30, 143, 235),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -74,7 +75,7 @@ class ExerciseHomePage extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: isPassed(ex) ? Colors.green : Colors.red,
+                        color: ex.isPassed ? Colors.green : Colors.red,
                       ),
                     ),
                   );
