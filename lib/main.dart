@@ -1,12 +1,7 @@
-import 'package:flutter/main.dart';
 import 'dart.dart';
 
 void main() {
-  runApp(
-    const ProviderScope(
-      child: MyApp(),
-    ),
-  );
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -21,29 +16,26 @@ class MyApp extends StatelessWidget {
   }
 }
 
-final exercisesProvider = StateProvider<List<Exercise>>((ref) {
-  return [
-    Exercise(name: 'Simone Rossi', score: 85, submittedAt: DateTime.now()),
-    Exercise(name: 'Mario Baccini', score: 92, submittedAt: DateTime.now()),
-    Exercise(name: 'Tommaso D'Acquino', score: 45, submittedAt: DateTime.now()),
-    Exercise(name: 'Alice Brown', score: 78, submittedAt: DateTime.now()),
-    Exercise(name: 'Tom Davis', score: 60, submittedAt: DateTime.now()),
-  ];
-});
-
-class ExerciseHomePage extends ConsumerWidget {
+class ExerciseHomePage extends StatelessWidget {
   const ExerciseHomePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final exercises = ref.watch(exercisesProvider);
-    final passedExercises = passedOnly(exercises);
-    final average = averageScore(exercises) ?? 0.0;
-    final topStudent = exercises.isEmpty ? 'None' : bestStudent(exercises);
+  Widget build(BuildContext context) {
+    final exercises = [
+      Exercise(name: 'Simone Rossi', score: 85, submittedAt: DateTime.now()),
+      Exercise(name: 'Mario Baccini', score: 92, submittedAt: DateTime.now()),
+      Exercise(name: 'Tommaso Neri', score: 88, submittedAt: DateTime.now()),
+      Exercise(name: 'Davide Minimi', score: 65, submittedAt: DateTime.now()),
+      Exercise(name: 'Lorenzo Massimi', score: 60, submittedAt: DateTime.now()),
+    ];
+
+    final passed = passedOnly(exercises);
+    final avg = averageScore(exercises) ?? 0.0;
+    final top = exercises.isEmpty ? 'Nessuno' : bestStudent(exercises);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Exercise Manager'),
+        title: const Text('Esercizi Studenti'),
         backgroundColor: Colors.blue,
       ),
       body: Padding(
@@ -57,58 +49,42 @@ class ExerciseHomePage extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Statistics',
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
+                    Text('Statistiche', style: Theme.of(context).textTheme.headlineSmall),
                     const SizedBox(height: 12),
-                    Text('Total exercises: ${exercises.length}'),
-                    Text('Passed (≥60): ${passedExercises.length}'),
-                    Text('Average score: ${average.toStringAsFixed(1)}'),
-                    Text('Best student: $topStudent'),
+                    Text('Totale: ${exercises.length}'),
+                    Text('Passati: ${passed.length}'),
+                    Text('Media: ${avg.toStringAsFixed(1)}'),
+                    Text('Migliore: $top'),
                   ],
                 ),
               ),
             ),
-            
             const SizedBox(height: 20),
-            Text(
-              'All Exercises',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
+            Text('Tutti gli esercizi', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 10),
             Expanded(
               child: ListView.builder(
                 itemCount: exercises.length,
                 itemBuilder: (context, index) {
-                  final exercise = exercises[index];
+                  final ex = exercises[index];
                   return ListTile(
-                    title: Text(exercise.name),
+                    title: Text(ex.name),
                     trailing: Text(
-                      '${exercise.score}',
+                      '${ex.score}',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: exercise.score >= 60 ? Colors.green : Colors.red,
+                        color: isPassed(ex) ? Colors.green : Colors.red,
                       ),
                     ),
                   );
                 },
               ),
             ),
-            
-            const SizedBox(height: 25),
-            Text(
-              'Passed Students Only',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
+            const SizedBox(height: 20),
+            Text('Solo voti sufficienti:', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
-            ...passedExercises.map(
-              (e) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Text('✓ ${e.name}: ${e.score}'),
-              ),
-            ),
+            ...passed.map((e) => Text('✓ ${e.name}: ${e.score}')),
           ],
         ),
       ),
