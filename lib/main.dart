@@ -15,7 +15,7 @@ class Review {
   factory Review.fromData(Map<String, Object?> payload) {
     return Review(
       nome: payload['nome'] as String,
-      dettagli: (payload['dettagli'] as String?)?.trim().isEmpty == true ? null : payload['dettagli'] as String?,
+      dettagli: payload['dettagli'] as String?,
       rating: payload['valore'] as int,
     );
   }
@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'MyFork Ristoranti',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
       home: const HomeScreen(),
@@ -58,8 +58,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final List<Review> _reviews = [
-    Review(nome: 'Ristorante Stellato', dettagli: 'Siamo stati benissimo, cibo semplice ma buonissimo.', rating: 5),
-    Review(nome: 'La Pasticceria', dettagli: 'Ottimo per la colazione al volo, personale gentile.', rating: 3),
+    Review(nome: 'Bar Pasticceria Lella', dettagli: 'Siamo stati benissimo, cibo semplice ma buonissimo.', rating: 5),
+    Review(nome: 'Pizzeria da Gino', dettagli: 'Ottimo per la colazione al volo, personale gentile.', rating: 3),
   ];
 
   void _handleNewEntry() async {
@@ -96,8 +96,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Fork'), 
-        backgroundColor: Colors.indigo.shade600, 
+        title: const Text('My Fork App'),
+        backgroundColor: Colors.blue, 
         foregroundColor: Colors.white,
       ),
       body: _reviews.isEmpty
@@ -120,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               Text(review.nome, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18, color: Colors.black87)),
                               const SizedBox(height: 4),
-                              review.dettagli != null
+                              review.dettagli != null && review.dettagli!.isNotEmpty
                                   ? Text(review.dettagli!)
                                   : const Text('Nessun dettaglio.', style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey)),
                               const SizedBox(height: 8), 
@@ -138,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.edit_note, size: 28, color: Colors.indigo),
+                          icon: const Icon(Icons.edit_note, size: 28, color: Colors.blue),
                           onPressed: () => _handleEdit(review, index),
                         ),
                       ],
@@ -149,8 +149,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _handleNewEntry,
-        tooltip: 'New Local',
-        backgroundColor: Colors.indigo.shade600,
+        tooltip: 'Nuovo Locale',
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         child: const Icon(Icons.add_comment),
       ),
@@ -163,7 +163,7 @@ class ReviewFormScreen extends StatelessWidget {
 
   const ReviewFormScreen({super.key, this.initialReview});
 
-  FormGroup _initFormGroup() {
+  FormGroup _creaLaForm() {
     final initialValues = initialReview?.toFormPayload() ?? {'nome': '', 'dettagli': '', 'valore': 5};
 
     return fb.group({
@@ -191,14 +191,16 @@ class ReviewFormScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(initialReview == null ? 'Nuova Recensione' : 'Modifica Dettagli'),
-        backgroundColor: Colors.indigo.shade600,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: ReactiveFormBuilder(
-          form: _initFormGroup,
+          form: _creaLaForm,
           builder: (context, form, child) {
+            final valoreControl = form.control('valore'); 
+            
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
@@ -230,31 +232,42 @@ class ReviewFormScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 25.0),
                 
-                Text('Valutazione (1 a 5):', style: TextStyle(fontSize: 16, color: Colors.indigo.shade700, fontWeight: FontWeight.bold)),
+                Text('Valutazione (1 a 5):', style: TextStyle(fontSize: 16, color: Colors.blue, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 10.0),
 
-                ReactiveSlider(
-                  formControlName: 'valore',
-                  max: 5,
-                  min: 1,
-                  divisions: 4,
-                  labelBuilder: (value) => value.round().toString(),
-                  activeColor: Colors.indigo,
-                ),
-                
                 ReactiveFormConsumer(
                   builder: (context, form, child) {
                     final currentRating = form.control('valore').value?.round() ?? 1;
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 8.0, bottom: 40.0),
-                      child: Text(
-                        'Punteggio Selezionato: $currentRating / 5',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.indigo.shade900),
-                      ),
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: List.generate(5, (index) {
+                        final ratingValue = index + 1;
+                        final isSelected = ratingValue == currentRating;
+                        return Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: ratingValue == 1 || ratingValue == 5 ? 0 : 4),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                form.control('valore').updateValue(ratingValue);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: isSelected ? Colors.blue : Colors.blueGrey.shade100,
+                                foregroundColor: isSelected ? Colors.white : Colors.black87,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                elevation: isSelected ? 4 : 1,
+                              ),
+                              child: Text('$ratingValue', style: const TextStyle(fontSize: 16)),
+                            ),
+                          ),
+                        );
+                      }),
                     );
                   },
                 ),
+                const SizedBox(height: 40.0),
                 
                 ReactiveFormConsumer(
                   builder: (context, form, child) {
@@ -267,7 +280,7 @@ class ReviewFormScreen extends StatelessWidget {
                       icon: const Icon(Icons.send_time_extension),
                       label: Text(initialReview == null ? 'Registra recensione' : 'Aggiorna'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.indigo.shade600,
+                        backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
                       ),
